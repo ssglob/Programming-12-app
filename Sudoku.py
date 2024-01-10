@@ -4,7 +4,7 @@ from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
-from sudoku_solver import Solution
+from sudoku_solver import solveSudoku
 
 class Sudoku(App):
     def build(self):
