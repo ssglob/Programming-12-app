@@ -1,4 +1,4 @@
-def solveSudoku(self, board):
+def solveSudoku(board):
     rows = [[] for i in range(9)]
     columns = [[] for i in range(9)]
     squares = [[] for i in range(9)]
@@ -32,3 +32,19 @@ def solveSudoku(self, board):
         return False
     help(0,0)
     return board
+def isValidSudoku(board):
+    rows,columns,squares = [[]for i in range(9)],[[]for i in range(9)],[[]for i in range(9)]
+    for c,i in enumerate(board):
+        for cc,j in enumerate(i):
+            if j != '.':
+                rows[c].append(j)
+                columns[cc].append(j)
+                squares[cc//3 + (c//3)*3].append(j)
+    for c,i in enumerate(rows):        
+        if len(set(rows[c])) != len(rows[c]):
+            return False
+        if len(set(columns[c])) != len(columns[c]):
+            return False
+        if len(set(squares[c])) != len(squares[c]):
+            return False
+    return True
