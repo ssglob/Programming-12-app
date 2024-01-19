@@ -8,6 +8,11 @@ from sudoku_solver import solveSudoku,isValidSudoku
 from random import randint
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
 
+class dummy(Screen):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+    def on_start(self):
+        MyApp.get_running_app().screen_manager.current = 'First'
 #page 1
 class Sudoku(BoxLayout):
     def __init__(self,**kwargs):
@@ -20,42 +25,60 @@ class Sudoku(BoxLayout):
         self.add_widget(self.start_game)
     
     def switch(self,item):
-        app.screen_manager.current = 'Second'
+        MyApp.get_running_app().screen_manager.current = 'Second'
 
 #page 2
-class game(BoxLayout):
+class Game(BoxLayout):
     def __init__(self,**kwargs):
-        super(game, self).__init__(**kwargs)
-        bd = [['.' for i in range(9)] for i in range(9)]
-        nums = [str(i) for i in range(1,10)]
-        nums2 = nums[:]
-        for c,i in enumerate(bd):
-            r = randint(0,len(nums)-1)
-            rand_num = randint(0,len(nums2)-1)
-            while nums2[rand_num] == nums[r]:
+        super(Game, self).__init__(**kwargs)
+        self.orientation = 'vertical'
+        self.game_started = False
+        self.game_bd = None
+    def start_game(self):
+        if not self.game_started:
+            bd = [['.' for i in range(9)] for i in range(9)]
+            nums = [str(i) for i in range(1,10)]
+            nums2 = nums[:]
+            for c,i in enumerate(bd):
+                r = randint(0,len(nums)-1)
                 rand_num = randint(0,len(nums2)-1)
-            bd[c][randint(3,8)] = nums.pop(r)
-            bd[c][0] = nums2.pop(rand_num)
-        bd = solveSudoku(bd)
-        game_bd = bd[:]
-        for c in range(len(game_bd)):
-            for n in range(4):
-                game_bd[c][randint(0,8)] = '.'
+                while nums2[rand_num] == nums[r]:
+                    rand_num = randint(0,len(nums2)-1)
+                bd[c][randint(3,8)] = nums.pop(r)
+                bd[c][0] = nums2.pop(rand_num)
+            bd = solveSudoku(bd)
+            self.game_bd = bd[:]
+            for c in range(len(self.game_bd)):
+                for n in range(4):
+                    self.game_bd[c][randint(0,8)] = '.'
+            self.game_started = True
+        
+    def game_running(self):
+        print(self.game_bd)
 
-class app(App):
+    def on_enter(self):
+        self.start_game()
+        self.game_running()
+
+class MyApp(App):
     def build(self):
         self.screen_manager = ScreenManager()
+        
+        self.dummypage = dummy()
+        screen = Screen(name='dummy')
+        screen.add_widget(self.dummypage)
+        self.screen_manager.add_widget(screen)
+
         self.firstpage = Sudoku()
         screen = Screen(name='First')
         screen.add_widget(self.firstpage)
         self.screen_manager.add_widget(screen)
 
-        self.secondpage = game()
+        self.secondpage = Game()
         screen = Screen(name='Second')
         screen.add_widget(self.secondpage)
         self.screen_manager.add_widget(screen)
-        
         return self.screen_manager
     
 if __name__ == "__main__":
-    app().run()
+    MyApp().run()
