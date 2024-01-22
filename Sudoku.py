@@ -8,11 +8,7 @@ from sudoku_solver import solveSudoku,isValidSudoku
 from random import randint
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
 
-class dummy(Screen):
-    def __init__(self,**kwargs):
-        super().__init__(**kwargs)
-    def on_start(self):
-        MyApp.get_running_app().screen_manager.current = 'First'
+
 #page 1
 class Sudoku(BoxLayout):
     def __init__(self,**kwargs):
@@ -52,22 +48,19 @@ class Game(BoxLayout):
                 for n in range(4):
                     self.game_bd[c][randint(0,8)] = '.'
             self.game_started = True
+        print(bd)
         
     def game_running(self):
         print(self.game_bd)
 
     def on_enter(self):
+        print('he')
         self.start_game()
         self.game_running()
 
 class MyApp(App):
     def build(self):
         self.screen_manager = ScreenManager()
-        
-        self.dummypage = dummy()
-        screen = Screen(name='dummy')
-        screen.add_widget(self.dummypage)
-        self.screen_manager.add_widget(screen)
 
         self.firstpage = Sudoku()
         screen = Screen(name='First')
