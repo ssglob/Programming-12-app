@@ -24,7 +24,7 @@ class Sudoku(BoxLayout):
         MyApp.get_running_app().screen_manager.current = 'Second'
 
 #page 2
-class Game(BoxLayout):
+class Game(Screen):
     def __init__(self,**kwargs):
         super(Game, self).__init__(**kwargs)
         self.orientation = 'vertical'
@@ -53,7 +53,7 @@ class Game(BoxLayout):
     def game_running(self):
         print(self.game_bd)
 
-    def on_enter(self):
+    def on_touch_down(self, touch):
         print('he')
         self.start_game()
         self.game_running()
@@ -71,7 +71,8 @@ class MyApp(App):
         screen = Screen(name='Second')
         screen.add_widget(self.secondpage)
         self.screen_manager.add_widget(screen)
+        
         return self.screen_manager
-    
+
 if __name__ == "__main__":
     MyApp().run()
