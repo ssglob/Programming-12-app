@@ -1,5 +1,6 @@
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.button import Button
@@ -7,7 +8,37 @@ from kivy.uix.textinput import TextInput
 from sudoku_solver import solveSudoku,isValidSudoku
 from random import randint
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
+from kivy.graphics import Color, Rectangle
+from kivy.uix.widget import Widget
 
+class ColorLabel(Label):
+    def __init__(self, square,**kwargs):
+        super(ColorLabel, self).__init__(**kwargs)
+        self.square = square
+        with self.canvas.before:
+            # Set the background color here
+            Color(1, 1, 1, 1)  # RGBA values (white)
+            self.rect = Rectangle(pos=self.pos, size=self.size)
+
+    def on_size(self, *args):
+        self.rect.size = self.size
+        self.rect.pos = self.pos
+
+class ColorTextInput(TextInput):
+    def __init__(self, square, **kwargs):
+        super(ColorTextInput, self).__init__(**kwargs)
+        self.square = square
+        with self.canvas.before:
+            Color(1, 1, 1, 1)  # White background color
+            self.rect = Rectangle(pos=self.pos, size=self.size)
+
+        self.bind(size=self._update_rect, pos=self._update_rect)
+
+    def _update_rect(self, instance, value):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
+        self.rect.pos = (self.pos[0] + 1, self.pos[1] + 1)
+        self.rect.size = (self.size[0] - 2, self.size[1] - 2)
 
 #page 1
 class Sudoku(BoxLayout):
@@ -21,15 +52,17 @@ class Sudoku(BoxLayout):
         self.add_widget(self.start_game)
     
     def switch(self,item):
-        MyApp.get_running_app().screen_manager.current = 'Second'
+        App.get_running_app().screen_manager.current = 'Second'
 
 #page 2
-class Game(Screen):
+class Game(GridLayout):
     def __init__(self,**kwargs):
         super(Game, self).__init__(**kwargs)
-        self.orientation = 'vertical'
+        self.rows = 9
+        self.cols = 9
         self.game_started = False
         self.game_bd = None
+
     def start_game(self):
         if not self.game_started:
             bd = [['.' for i in range(9)] for i in range(9)]
@@ -48,15 +81,27 @@ class Game(Screen):
                 for n in range(4):
                     self.game_bd[c][randint(0,8)] = '.'
             self.game_started = True
-        print(bd)
         
     def game_running(self):
-        print(self.game_bd)
+        for c,i in enumerate(self.game_bd):
+            sq = ''
+            if (c + 1)%3 == 0:
+                if c != 8:
+                    sq += 'v'
+            for n,j in enumerate(i):
+                if j == '.':
+                    #add sq back in later
+                    box = TextInput(background_color = [1,1,1,1],font_size = 20, multiline=False, size_hint = (1,1))
+                else:
+                    box = ColorLabel(sq,text = j, color = [0,0,0,1])
+                self.add_widget(box)
+        self.game = self.game_bd[:]
 
-    def on_touch_down(self, touch):
-        print('he')
-        self.start_game()
-        self.game_running()
+    def on_touch_down(self,touch):
+        if not self.game_started:
+            self.start_game()
+            self.game_running()
+            self.game_started = True
 
 class MyApp(App):
     def build(self):
