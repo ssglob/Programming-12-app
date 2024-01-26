@@ -24,21 +24,14 @@ class ColorLabel(Label):
         self.rect.size = self.size
         self.rect.pos = self.pos
 
-class ColorTextInput(TextInput):
-    def __init__(self, square, **kwargs):
-        super(ColorTextInput, self).__init__(**kwargs)
-        self.square = square
-        with self.canvas.before:
-            Color(1, 1, 1, 1)  # White background color
-            self.rect = Rectangle(pos=self.pos, size=self.size)
-
-        self.bind(size=self._update_rect, pos=self._update_rect)
-
-    def _update_rect(self, instance, value):
-        self.rect.pos = self.pos
-        self.rect.size = self.size
-        self.rect.pos = (self.pos[0] + 1, self.pos[1] + 1)
-        self.rect.size = (self.size[0] - 2, self.size[1] - 2)
+class NumTextInput(TextInput):
+    def insert_text(self,substring,from_undo=False):
+        nums = '1234567890'
+        if len(self.text)>=1:
+            s = ''
+        elif substring in nums:
+            s = substring
+        return super().insert_text(s, from_undo=from_undo)
 
 #page 1
 class Sudoku(BoxLayout):
@@ -58,31 +51,39 @@ class Sudoku(BoxLayout):
 class Game(GridLayout):
     def __init__(self,**kwargs):
         super(Game, self).__init__(**kwargs)
-        self.rows = 9
-        self.cols = 9
+        self.rows = 10
+        self.cols = 10
         self.game_started = False
         self.game_bd = None
+        self.btn = Button(text = "Start")
+        self.btn.bind(on_press = self.start_game)
+        self.add_widget(self.btn)
 
-    def start_game(self):
-        if not self.game_started:
-            bd = [['.' for i in range(9)] for i in range(9)]
-            nums = [str(i) for i in range(1,10)]
-            nums2 = nums[:]
-            for c,i in enumerate(bd):
-                r = randint(0,len(nums)-1)
+    def start_game(self,*args):
+        bd = [['.' for i in range(9)] for i in range(9)]
+        nums = [str(i) for i in range(1,10)]
+        nums2 = nums[:]
+        for c,i in enumerate(bd):
+            r = randint(0,len(nums)-1)
+            rand_num = randint(0,len(nums2)-1)
+            while nums2[rand_num] == nums[r]:
                 rand_num = randint(0,len(nums2)-1)
-                while nums2[rand_num] == nums[r]:
-                    rand_num = randint(0,len(nums2)-1)
-                bd[c][randint(3,8)] = nums.pop(r)
-                bd[c][0] = nums2.pop(rand_num)
-            bd = solveSudoku(bd)
-            self.game_bd = bd[:]
-            for c in range(len(self.game_bd)):
-                for n in range(4):
-                    self.game_bd[c][randint(0,8)] = '.'
-            self.game_started = True
+            bd[c][randint(3,8)] = nums.pop(r)
+            bd[c][0] = nums2.pop(rand_num)
+        bd = solveSudoku(bd)
+        self.game_bd = bd[:]
+        for c in range(len(self.game_bd)):
+            for n in range(4):
+                self.game_bd[c][randint(0,8)] = '.'
+        self.remove_widget(self.btn)
+        self.game_running()
+    
+    def reset(self):
+        self.game = self.game_bd
         
     def game_running(self):
+        self.empties = 0
+        tb = []
         for c,i in enumerate(self.game_bd):
             sq = ''
             if (c + 1)%3 == 0:
@@ -91,17 +92,21 @@ class Game(GridLayout):
             for n,j in enumerate(i):
                 if j == '.':
                     #add sq back in later
-                    box = TextInput(background_color = [1,1,1,1],font_size = 20, multiline=False, size_hint = (1,1))
+                    self.empties += 1
+                    box = NumTextInput(background_color = [1,1,1,1],font_size = 20, multiline=False, size_hint = (1,1), padding=10)
+                    tb.append(box)
                 else:
-                    box = ColorLabel(sq,text = j, color = [0,0,0,1])
+                    box = ColorLabel(sq,text = j, color = [0,0,0,1],padding=10)
                 self.add_widget(box)
+            if c == 0:
+                self.game_reset = Button(text="Reset board")
+                self.game_reset.bind(on_press=self.reset)
+                self.add_widget(self.game_reset)
+            else:
+                self.lbl = Label()
+                self.add_widget(self.lbl)
         self.game = self.game_bd[:]
-
-    def on_touch_down(self,touch):
-        if not self.game_started:
-            self.start_game()
-            self.game_running()
-            self.game_started = True
+        self.filled = 0
 
 class MyApp(App):
     def build(self):
