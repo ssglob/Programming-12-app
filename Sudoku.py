@@ -10,6 +10,7 @@ from random import randint
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
 from kivy.graphics import Color, Rectangle
 from kivy.uix.widget import Widget
+from kivy.clock import Clock
 
 class ColorLabel(Label):
     def __init__(self, square,**kwargs):
@@ -58,43 +59,69 @@ class Game(GridLayout):
         self.btn = Button(text = "Start")
         self.btn.bind(on_press = self.start_game)
         self.add_widget(self.btn)
+        self.tb = {}
+        self.filled = 0
+        self.game = None
+
+    def Victory(self,*args):
+        App.get_running_app().screen_manager.current = 'Victory'
+
+    def reset(self,*args):
+        self.game = self.game_bd
+        self.filled = 0
+
+        for i in self.tb:
+            i.text = ''
+        
+    def change_bd(self,*args):
+        coords = self.tb[args[0]]
+        self.game[coords[0]][coords[1]] = args[1]
+        self.filled += 1
+        if self.filled == len(self.tb.keys()):
+            if isValidSudoku(self.game):
+                self.Victory()
 
     def start_game(self,*args):
         bd = [['.' for i in range(9)] for i in range(9)]
         nums = [str(i) for i in range(1,10)]
         nums2 = nums[:]
+
         for c,i in enumerate(bd):
             r = randint(0,len(nums)-1)
             rand_num = randint(0,len(nums2)-1)
+
             while nums2[rand_num] == nums[r]:
                 rand_num = randint(0,len(nums2)-1)
+
             bd[c][randint(3,8)] = nums.pop(r)
             bd[c][0] = nums2.pop(rand_num)
+
         bd = solveSudoku(bd)
         self.game_bd = bd[:]
+        for i in bd:
+            print(i)
+
         for c in range(len(self.game_bd)):
+
             for n in range(4):
                 self.game_bd[c][randint(0,8)] = '.'
+
         self.remove_widget(self.btn)
-        self.game_running()
-    
-    def reset(self):
-        self.game = self.game_bd
-        
-    def game_running(self):
         self.empties = 0
-        tb = []
+
         for c,i in enumerate(self.game_bd):
             sq = ''
             if (c + 1)%3 == 0:
                 if c != 8:
                     sq += 'v'
+
             for n,j in enumerate(i):
                 if j == '.':
                     #add sq back in later
                     self.empties += 1
                     box = NumTextInput(background_color = [1,1,1,1],font_size = 20, multiline=False, size_hint = (1,1), padding=10)
-                    tb.append(box)
+                    self.tb[box] = [c,n]
+                    box.bind(text=self.change_bd)
                 else:
                     box = ColorLabel(sq,text = j, color = [0,0,0,1],padding=10)
                 self.add_widget(box)
@@ -106,7 +133,15 @@ class Game(GridLayout):
                 self.lbl = Label()
                 self.add_widget(self.lbl)
         self.game = self.game_bd[:]
-        self.filled = 0
+
+#third page
+class Win(GridLayout):
+    def __init__(self,**kwargs):
+        super(Win, self).__init__(**kwargs)
+        self.rows = 1
+        self.cols = 1
+        lbl = Label(text = 'You win!')
+        self.add_widget(lbl)
 
 class MyApp(App):
     def build(self):
@@ -122,6 +157,11 @@ class MyApp(App):
         screen.add_widget(self.secondpage)
         self.screen_manager.add_widget(screen)
         
+        self.thirdpage = Win()
+        screen = Screen(name='Victory')
+        screen.add_widget(self.thirdpage)
+        self.screen_manager.add_widget(screen)
+
         return self.screen_manager
 
 if __name__ == "__main__":
