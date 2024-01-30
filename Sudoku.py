@@ -76,6 +76,18 @@ class Game(GridLayout):
         self.empties = 0
 
     def Victory(self,*args):
+        self.rows = 11
+        self.cols = 12
+        self.game_started = False
+        self.game_bd = None
+        self.clear_widgets()
+        self.btn = Button(text = "Start")
+        self.btn.bind(on_press = self.start_game)
+        self.add_widget(self.btn)
+        self.tb = {}
+        self.filled = 0
+        self.game = None
+        self.empties = 0
         App.get_running_app().screen_manager.current = 'Victory'
 
     def reset(self,*args):
@@ -104,10 +116,10 @@ class Game(GridLayout):
         for c,i in enumerate(bd):
             r = randint(0,len(nums)-1)
             rand_num = randint(0,len(nums2)-1)
-
-            while nums2[rand_num] == nums[r]:
+            cc = 0
+            while nums2[rand_num] == nums[r] and cc<1000:
                 rand_num = randint(0,len(nums2)-1)
-
+                cc += 1
             bd[c][randint(3,8)] = nums.pop(r)
             bd[c][0] = nums2.pop(rand_num)
 
