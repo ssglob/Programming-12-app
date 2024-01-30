@@ -60,11 +60,10 @@ class Sudoku(BoxLayout):
         App.get_running_app().screen_manager.current = 'Second'
 
 #page 2
-class Game(GridLayout):
+class Game(BoxLayout):
     def __init__(self,**kwargs):
         super(Game, self).__init__(**kwargs)
-        self.rows = 11
-        self.cols = 12
+        self.orientation = 'horizontal'
         self.game_started = False
         self.game_bd = None
         self.btn = Button(text = "Start")
@@ -109,6 +108,22 @@ class Game(GridLayout):
                 self.Victory()
 
     def start_game(self,*args):
+        self.boxes = []
+        for i in range(11):
+            if i!=3 and i!=7:
+                b = BoxLayout(
+                    orientation = 'vertical'
+                )
+            else:
+                b = SquareLabel(
+                    size_hint = (.05,1)
+                )
+            self.add_widget(b)
+            self.boxes.append(b)
+        self.game_reset = Button(text="Reset board")
+        self.game_reset.bind(on_press=self.reset)
+        self.add_widget(self.game_reset)
+        
         bd = [['.' for i in range(9)] for i in range(9)]
         nums = [str(i) for i in range(1,10)]
         nums2 = nums[:]
@@ -136,32 +151,24 @@ class Game(GridLayout):
         self.remove_widget(self.btn)
 
         for c,i in enumerate(self.game_bd):
-            if c%3 == 0:
-                if c != 8 and c >0:
-                    for ii in range(12):
-                        line = SquareLabel(height = 10,width=100)
-                        self.add_widget(line)
+            # if c%3 == 0:
+            #     if c != 8 and c >0:
+            #         for ii in range(12):
+            #             line = SquareLabel(height = 10,width=100)
+            #             self.add_widget(line)
 
             for n,j in enumerate(i):
-                if n%3 == 0 and n>0 and n<8:
-                    line = SquareLabel(width = 10,height=100)
-                    self.add_widget(line)
+                if c%3 == 0 and c>0 and c<8:
+                    line = SquareLabel(size_hint = (1,.05))
+                    self.boxes[n + n//3].add_widget(line)
                 if j == '.':
-                    #add sq back in later
                     self.empties += 1
                     box = NumTextInput(background_color = [1,1,1,1],font_size = 20, multiline=False, size_hint = (1,1), padding=10)
                     self.tb[box] = [c,n]
                     box.bind(text=self.change_bd)
                 else:
                     box = ColorLabel(text = j, color = [0,0,0,1],padding=10)
-                self.add_widget(box)
-            if c == 0:
-                self.game_reset = Button(text="Reset board")
-                self.game_reset.bind(on_press=self.reset)
-                self.add_widget(self.game_reset)
-            else:
-                self.lbl = Label()
-                self.add_widget(self.lbl)
+                self.boxes[n + n//3].add_widget(box)
         self.game = self.game_bd[:]
 
 #third page
