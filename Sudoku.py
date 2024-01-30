@@ -13,9 +13,8 @@ from kivy.uix.widget import Widget
 from kivy.clock import Clock
 
 class ColorLabel(Label):
-    def __init__(self, square,**kwargs):
+    def __init__(self, **kwargs):
         super(ColorLabel, self).__init__(**kwargs)
-        self.square = square
         with self.canvas.before:
             # Set the background color here
             Color(1, 1, 1, 1)  # RGBA values (white)
@@ -25,10 +24,22 @@ class ColorLabel(Label):
         self.rect.size = self.size
         self.rect.pos = self.pos
 
+class SquareLabel(Label):
+    def __init__(self, **kwargs):
+        super(SquareLabel, self).__init__(**kwargs)
+        with self.canvas.before:
+            # Set the background color here
+            Color(0, 0, 0, 1)  # RGBA values (black)
+            self.rect = Rectangle(pos=self.pos, size=self.size)
+
+    # def on_size(self, *args):
+    #     self.rect.size = self.size
+    #     self.rect.pos = self.pos
+
 class NumTextInput(TextInput):
     def insert_text(self,substring,from_undo=False):
         nums = '1234567890'
-        if len(self.text)>=1:
+        if len(self.text)==1 or not substring in nums:
             s = ''
         elif substring in nums:
             s = substring
@@ -52,8 +63,8 @@ class Sudoku(BoxLayout):
 class Game(GridLayout):
     def __init__(self,**kwargs):
         super(Game, self).__init__(**kwargs)
-        self.rows = 10
-        self.cols = 10
+        self.rows = 11
+        self.cols = 12
         self.game_started = False
         self.game_bd = None
         self.btn = Button(text = "Start")
@@ -62,6 +73,7 @@ class Game(GridLayout):
         self.tb = {}
         self.filled = 0
         self.game = None
+        self.empties = 0
 
     def Victory(self,*args):
         App.get_running_app().screen_manager.current = 'Victory'
@@ -76,8 +88,11 @@ class Game(GridLayout):
     def change_bd(self,*args):
         coords = self.tb[args[0]]
         self.game[coords[0]][coords[1]] = args[1]
-        self.filled += 1
-        if self.filled == len(self.tb.keys()):
+        if args[1] == '':
+            self.filled -= 1
+        else:
+            self.filled += 1
+        if self.filled == self.empties:
             if isValidSudoku(self.game):
                 self.Victory()
 
@@ -107,15 +122,18 @@ class Game(GridLayout):
                 self.game_bd[c][randint(0,8)] = '.'
 
         self.remove_widget(self.btn)
-        self.empties = 0
 
         for c,i in enumerate(self.game_bd):
-            sq = ''
-            if (c + 1)%3 == 0:
-                if c != 8:
-                    sq += 'v'
+            if c%3 == 0:
+                if c != 8 and c >0:
+                    for ii in range(12):
+                        line = SquareLabel(height = 10,width=100)
+                        self.add_widget(line)
 
             for n,j in enumerate(i):
+                if n%3 == 0 and n>0 and n<8:
+                    line = SquareLabel(width = 10,height=100)
+                    self.add_widget(line)
                 if j == '.':
                     #add sq back in later
                     self.empties += 1
@@ -123,7 +141,7 @@ class Game(GridLayout):
                     self.tb[box] = [c,n]
                     box.bind(text=self.change_bd)
                 else:
-                    box = ColorLabel(sq,text = j, color = [0,0,0,1],padding=10)
+                    box = ColorLabel(text = j, color = [0,0,0,1],padding=10)
                 self.add_widget(box)
             if c == 0:
                 self.game_reset = Button(text="Reset board")
@@ -138,10 +156,22 @@ class Game(GridLayout):
 class Win(GridLayout):
     def __init__(self,**kwargs):
         super(Win, self).__init__(**kwargs)
-        self.rows = 1
+        self.rows = 3
         self.cols = 1
         lbl = Label(text = 'You win!')
         self.add_widget(lbl)
+        btn = Button(text = "Play again")
+        btn.bind(on_press=self.switch)
+        self.add_widget(btn)
+        quit = Button(text = 'Exit')
+        quit.bind(on_press = self.exit)
+        self.add_widget(quit)
+
+    def exit(self,*args):
+        App.get_running_app().stop()
+
+    def switch(self,*args):
+        App.get_running_app().screen_manager.current = 'Second'
 
 class MyApp(App):
     def build(self):
