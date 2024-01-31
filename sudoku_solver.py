@@ -1,3 +1,5 @@
+import sys
+sys.setrecursionlimit(150)
 def solveSudoku(board):
     rows = [[] for i in range(9)]
     columns = [[] for i in range(9)]

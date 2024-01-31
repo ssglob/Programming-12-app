@@ -143,18 +143,13 @@ class Game(BoxLayout):
         
         bd = [['.' for i in range(9)] for i in range(9)]
         self.rand(bd)
-
-        oldbd = bd[:]
         bd = solveSudoku(bd)
 
-        # if oldbd == bd:
-        #     while oldbd == bd:
-        #         bd = [['.' for i in range(9)] for i in range(9)]
-        #         self.rand(bd)
-
-        #         oldbd = bd[:]
-        #         bd = solveSudoku(bd)
-        
+        if ''.join([''.join([i for i in ii if i == '.']) for ii in bd]):
+            while ''.join([''.join([i for i in ii if i == '.']) for ii in bd]):
+                bd = [['.' for i in range(9)] for i in range(9)]
+                bd = self.rand(bd)
+                bd = solveSudoku(bd)
 
         self.game_bd = bd[:]
 
