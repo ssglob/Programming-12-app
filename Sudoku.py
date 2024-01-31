@@ -32,9 +32,9 @@ class SquareLabel(Label):
             Color(0, 0, 0, 1)  # RGBA values (black)
             self.rect = Rectangle(pos=self.pos, size=self.size)
 
-    # def on_size(self, *args):
-    #     self.rect.size = self.size
-    #     self.rect.pos = self.pos
+    def on_size(self, *args):
+        self.rect.size = self.size
+        self.rect.pos = self.pos
 
 class NumTextInput(TextInput):
     def insert_text(self,substring,from_undo=False):
@@ -73,6 +73,23 @@ class Game(BoxLayout):
         self.filled = 0
         self.game = None
         self.empties = 0
+
+    def rand(self,b):
+        nums = [str(i) for i in range(1,10)]
+        nums2 = nums[:]
+
+        for c,i in enumerate(b):
+            r = randint(0,len(nums)-1)
+            rand_num = randint(0,len(nums2)-1)
+            cc = 0
+
+            while nums2[rand_num] == nums[r] and cc<1000:
+                rand_num = randint(0,len(nums2)-1)
+                cc += 1
+
+            b[c][0] = nums.pop(r)
+            b[c][randint(3,5)] = nums2.pop(rand_num)
+        return b
 
     def Victory(self,*args):
         self.rows = 11
@@ -125,24 +142,25 @@ class Game(BoxLayout):
         self.add_widget(self.game_reset)
         
         bd = [['.' for i in range(9)] for i in range(9)]
-        nums = [str(i) for i in range(1,10)]
-        nums2 = nums[:]
+        self.rand(bd)
 
-        for c,i in enumerate(bd):
-            r = randint(0,len(nums)-1)
-            rand_num = randint(0,len(nums2)-1)
-            cc = 0
-            while nums2[rand_num] == nums[r] and cc<1000:
-                rand_num = randint(0,len(nums2)-1)
-                cc += 1
-            bd[c][randint(3,8)] = nums.pop(r)
-            bd[c][0] = nums2.pop(rand_num)
-
+        oldbd = bd[:]
         bd = solveSudoku(bd)
+
+        # if oldbd == bd:
+        #     while oldbd == bd:
+        #         bd = [['.' for i in range(9)] for i in range(9)]
+        #         self.rand(bd)
+
+        #         oldbd = bd[:]
+        #         bd = solveSudoku(bd)
+        
+
         self.game_bd = bd[:]
+
         for i in bd:
             print(i)
-
+        print('\n')
         for c in range(len(self.game_bd)):
 
             for n in range(4):
@@ -172,12 +190,11 @@ class Game(BoxLayout):
         self.game = self.game_bd[:]
 
 #third page
-class Win(GridLayout):
+class Win(BoxLayout):
     def __init__(self,**kwargs):
         super(Win, self).__init__(**kwargs)
-        self.rows = 3
-        self.cols = 1
-        lbl = Label(text = 'You win!')
+        self.orientation = 'vertical'
+        lbl = ColorLabel(text = 'You win!', size_hint = (1, .6), color = [0,0,0,1])
         self.add_widget(lbl)
         btn = Button(text = "Play again")
         btn.bind(on_press=self.switch)
