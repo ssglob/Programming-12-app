@@ -83,15 +83,15 @@ def solve(bb):
         bb = q.get()
     elif ''.join([''.join([i for i in ii if i == '.']) for ii in bd]):
         while ''.join([''.join([i for i in ii if i == '.']) for ii in bd]) or not isValidSudoku(bd):
-            bd = [['.' for i in range(9)] for i in range(9)]
-            bd = rand(bd)
+            bb = [['.' for i in range(9)] for i in range(9)]
+            bb = rand(bb)
             print('bruh')
-            if isValidSudoku(bd):
+            if isValidSudoku(bb):
                     q = multiprocessing.Queue()
-                    p = multiprocessing.Process(target=solveSudoku, name="solveSudoku", args=(bd,q))
+                    p = multiprocessing.Process(target=solveSudoku, name="solveSudoku", args=(bb,q))
                     p.start()
                     p.join(3)
                     p.terminate()
                     p.join()
-                    bd = q.get()
+                    bb = q.get()
     return bb

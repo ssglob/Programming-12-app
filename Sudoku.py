@@ -153,10 +153,6 @@ class Game(BoxLayout):
         bd = solve(bd)
 
         self.game_bd = bd[:]
-
-        for i in bd:
-            print(i)
-        print('\n')
         for c in range(len(self.game_bd)):
 
             for n in range(4):
