@@ -5,12 +5,14 @@ from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
-from sudoku_solver import solveSudoku,isValidSudoku
+from sudoku_solver import solveSudoku,isValidSudoku,solve
 from random import randint
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
 from kivy.graphics import Color, Rectangle
 from kivy.uix.widget import Widget
 from kivy.clock import Clock
+import multiprocessing
+import time
 
 class ColorLabel(Label):
     def __init__(self, **kwargs):
@@ -77,6 +79,9 @@ class Game(BoxLayout):
     def rand(self,b):
         nums = [str(i) for i in range(1,10)]
         nums2 = nums[:]
+        coords2 = [8,3,5,6,4,7]
+        for i in range(3):
+            coords2.append(randint(3,8))
 
         for c,i in enumerate(b):
             r = randint(0,len(nums)-1)
@@ -88,7 +93,7 @@ class Game(BoxLayout):
                 cc += 1
 
             b[c][0] = nums.pop(r)
-            b[c][randint(3,5)] = nums2.pop(rand_num)
+            b[c][coords2.pop(randint(0,len(coords2)-1))] = nums2.pop(rand_num)
         return b
 
     def Victory(self,*args):
@@ -143,13 +148,9 @@ class Game(BoxLayout):
         
         bd = [['.' for i in range(9)] for i in range(9)]
         self.rand(bd)
-        bd = solveSudoku(bd)
-
-        if ''.join([''.join([i for i in ii if i == '.']) for ii in bd]):
-            while ''.join([''.join([i for i in ii if i == '.']) for ii in bd]):
-                bd = [['.' for i in range(9)] for i in range(9)]
-                bd = self.rand(bd)
-                bd = solveSudoku(bd)
+        bd = [['.' for i in range(9)] for i in range(9)]
+        bd = self.rand(bd)
+        bd = solve(bd)
 
         self.game_bd = bd[:]
 
