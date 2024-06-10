@@ -1,5 +1,6 @@
 import multiprocessing
 import time
+from random import randint
 def solveSudoku(board,qq):
     rows = [[] for i in range(9)]
     columns = [[] for i in range(9)]

@@ -13,6 +13,9 @@ from kivy.uix.widget import Widget
 from kivy.clock import Clock
 import multiprocessing
 import time
+import os, sys
+from kivy.resources import resource_add_path, resource_find
+
 
 class ColorLabel(Label):
     def __init__(self, **kwargs):
@@ -46,6 +49,7 @@ class NumTextInput(TextInput):
         elif substring in nums:
             s = substring
         return super().insert_text(s, from_undo=from_undo)
+    
 
 #page 1
 class Sudoku(BoxLayout):
@@ -223,4 +227,6 @@ class MyApp(App):
         return self.screen_manager
 
 if __name__ == "__main__":
+    if hasattr(sys, '_MEIPASS'):
+        resource_add_path(os.path.join(sys._MEIPASS))
     MyApp().run()
