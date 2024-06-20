@@ -5,13 +5,12 @@ from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
-from sudoku_solver import solveSudoku,isValidSudoku,solve
+from sudoku_solver import solveSudoku, rand, isValidSudoku
 from random import randint
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
 from kivy.graphics import Color, Rectangle
 from kivy.uix.widget import Widget
 from kivy.clock import Clock
-import multiprocessing
 import time
 import os, sys
 from kivy.resources import resource_add_path, resource_find
@@ -80,26 +79,6 @@ class Game(BoxLayout):
         self.game = None
         self.empties = 0
 
-    def rand(self,b):
-        nums = [str(i) for i in range(1,10)]
-        nums2 = nums[:]
-        coords2 = [8,3,5,6,4,7]
-        for i in range(3):
-            coords2.append(randint(3,8))
-
-        for c,i in enumerate(b):
-            r = randint(0,len(nums)-1)
-            rand_num = randint(0,len(nums2)-1)
-            cc = 0
-
-            while nums2[rand_num] == nums[r] and cc<1000:
-                rand_num = randint(0,len(nums2)-1)
-                cc += 1
-
-            b[c][0] = nums.pop(r)
-            b[c][coords2.pop(randint(0,len(coords2)-1))] = nums2.pop(rand_num)
-        return b
-
     def Victory(self,*args):
         self.rows = 11
         self.cols = 12
@@ -150,11 +129,11 @@ class Game(BoxLayout):
         self.game_reset.bind(on_press=self.reset)
         self.add_widget(self.game_reset)
         
+        # bd = [['.' for i in range(9)] for i in range(9)]
+        # self.rand(bd)
         bd = [['.' for i in range(9)] for i in range(9)]
-        self.rand(bd)
-        bd = [['.' for i in range(9)] for i in range(9)]
-        bd = self.rand(bd)
-        bd = solve(bd)
+        bd = rand(bd)
+        bd = solveSudoku(bd)
 
         self.game_bd = bd[:]
         for c in range(len(self.game_bd)):
@@ -206,6 +185,7 @@ class Win(BoxLayout):
         App.get_running_app().screen_manager.current = 'Second'
 
 class MyApp(App):
+    title = 'Sudoku'
     def build(self):
         self.screen_manager = ScreenManager()
 

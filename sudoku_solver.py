@@ -1,7 +1,6 @@
-import multiprocessing
 import time
 from random import randint
-def solveSudoku(board,qq):
+def solveSudoku(board):
     rows = [[] for i in range(9)]
     columns = [[] for i in range(9)]
     squares = [[] for i in range(9)]
@@ -37,7 +36,8 @@ def solveSudoku(board,qq):
         
         return False
     help(0,0)
-    qq.put(board)
+    return board
+
 def isValidSudoku(board):
     rows,columns,squares = [[]for i in range(9)],[[]for i in range(9)],[[]for i in range(9)]
     for c,i in enumerate(board):
@@ -54,6 +54,7 @@ def isValidSudoku(board):
         if len(set(squares[c])) != len(squares[c]):
             return False
     return True
+
 def rand(b):
     nums = [str(i) for i in range(1,10)]
     nums2 = nums[:]
@@ -64,35 +65,12 @@ def rand(b):
     for c,i in enumerate(b):
         r = randint(0,len(nums)-1)
         rand_num = randint(0,len(nums2)-1)
-        cc = 0
 
-        while nums2[rand_num] == nums[r] and cc<1000:
+        while nums2[rand_num] == nums[r] and (len(nums2) != 1 and len(nums) != 1):
             rand_num = randint(0,len(nums2)-1)
-            cc += 1
-
+        if (len(nums2) == 1 and len(nums) == 1):
+            rand_num = 0
+            nums2 = ['.']
         b[c][0] = nums.pop(r)
         b[c][coords2.pop(randint(0,len(coords2)-1))] = nums2.pop(rand_num)
     return b
-def solve(bb):
-    if isValidSudoku(bb):
-        q = multiprocessing.Queue()
-        p = multiprocessing.Process(target=solveSudoku, name="solveSudoku", args=(bb,q))
-        p.start()
-        p.join(3)
-        p.terminate()
-        p.join()
-        bb = q.get()
-    elif ''.join([''.join([i for i in ii if i == '.']) for ii in bd]):
-        while ''.join([''.join([i for i in ii if i == '.']) for ii in bd]) or not isValidSudoku(bd):
-            bb = [['.' for i in range(9)] for i in range(9)]
-            bb = rand(bb)
-            print('bruh')
-            if isValidSudoku(bb):
-                    q = multiprocessing.Queue()
-                    p = multiprocessing.Process(target=solveSudoku, name="solveSudoku", args=(bb,q))
-                    p.start()
-                    p.join(3)
-                    p.terminate()
-                    p.join()
-                    bb = q.get()
-    return bb
